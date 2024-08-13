@@ -1,12 +1,15 @@
 from parser import BinOp, UnaryOp, Num, Boolean
 from lexer import TokenType
 
+
 class Function:
     def __init__(self, name, params, body, env):
         self.name = name
         self.params = params
         self.body = body
         self.env = env
+
+
 class Interpreter:
     def __init__(self):
         self.global_env = {}
@@ -96,6 +99,6 @@ class Interpreter:
         if value is None:
             raise NameError(f"Name '{node.value}' is not defined")
         return value
+
     def interpret(self, tree):
         return self.visit(tree)
-

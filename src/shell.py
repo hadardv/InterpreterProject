@@ -52,7 +52,7 @@ def main():
 
     while True:
         try:
-            text = input('>')
+            text = input('> ')
             if text.lower() == 'exit':
                 print("Goodbye!")
                 break

@@ -22,8 +22,8 @@ class TokenType(Enum):
     LESS_THAN = 'LESS_THAN'
     GREATER_THAN_OR_EQUAL = 'GREATER_THAN_OR_EQUAL'
     LESS_THAN_OR_EQUAL = 'LESS_THAN_OR_EQUAL'
-    LPAREN = 'LPAREN'  # New token type for left parenthesis
-    RPAREN = 'RPAREN'  # New token type for right parenthesis
+    LPAREN = 'LPAREN'
+    RPAREN = 'RPAREN'
     EOF = 'EOF'
 
 class Token:
@@ -32,7 +32,7 @@ class Token:
         self.value = value
 
     def __str__(self):
-        return (f'Token({self.type}, {self.value})')
+        return f'Token({self.type}, {self.value})'
 
 class Lexer:
     def __init__(self, text):
@@ -46,10 +46,14 @@ class Lexer:
             result += self.current_char
             self.advance()
 
-        if result.lower() == 'function':  # Change this line
+        if result == 'function':
             return Token(TokenType.FUNCTION, result)
-        elif result.lower() == 'lambda':  # Add this line for consistency
+        elif result == 'lambda':
             return Token(TokenType.LAMBDA, result)
+        elif result.lower() == 'true':
+            return Token(TokenType.BOOLEAN, True)
+        elif result.lower() == 'false':
+            return Token(TokenType.BOOLEAN, False)
         else:
             return Token(TokenType.IDENTIFIER, result)
 
@@ -67,9 +71,6 @@ class Lexer:
 
     def integer(self):
         result = ''
-        if self.current_char == '-':
-            result += self.current_char
-            self.advance()
         while self.current_char is not None and self.current_char.isdigit():
             result += self.current_char
             self.advance()
@@ -81,22 +82,11 @@ class Lexer:
                 self.skip_whitespace()
                 continue
 
-            if self.current_char.isdigit() or self.current_char == '-':
+            if self.current_char.isdigit():
                 return Token(TokenType.INTEGER, self.integer())
 
-            if self.current_char.lower() == 't':
-                self.advance()
-                if self.text[self.pos:self.pos+3].lower() == 'rue':
-                    self.pos += 3
-                    self.current_char = self.text[self.pos] if self.pos < len(self.text) else None
-                    return Token(TokenType.BOOLEAN, True)
-
-            if self.current_char.lower() == 'f':
-                self.advance()
-                if self.text[self.pos:self.pos+4].lower() == 'alse':
-                    self.pos += 4
-                    self.current_char = self.text[self.pos] if self.pos < len(self.text) else None
-                    return Token(TokenType.BOOLEAN, False)
+            if self.current_char.isalpha() or self.current_char == '_':
+                return self._id()
 
             if self.current_char == '+':
                 self.advance()
@@ -141,6 +131,10 @@ class Lexer:
                     self.advance()
                     self.advance()
                     return Token(TokenType.EQUAL, '==')
+                elif self.peek() == '>':
+                    self.advance()
+                    self.advance()
+                    return Token(TokenType.ARROW, '=>')
 
             if self.current_char == '>':
                 if self.peek() == '=':
@@ -158,24 +152,17 @@ class Lexer:
                 self.advance()
                 return Token(TokenType.LESS_THAN, '<')
 
-            if self.current_char == '(':  # New condition for left parenthesis
+            if self.current_char == '(':
                 self.advance()
                 return Token(TokenType.LPAREN, '(')
 
-            if self.current_char == ')':  # New condition for right parenthesis
+            if self.current_char == ')':
                 self.advance()
                 return Token(TokenType.RPAREN, ')')
-            if self.current_char.isalpha() or self.current_char == '_':
-                return self._id()
 
             if self.current_char == ',':
                 self.advance()
                 return Token(TokenType.COMMA, ',')
-
-            if self.current_char == '=' and self.peek() == '>':
-                self.advance()
-                self.advance()
-                return Token(TokenType.ARROW, '=>')
 
             raise Exception(f'Invalid character: {self.current_char}')
 
