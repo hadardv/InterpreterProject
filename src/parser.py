@@ -1,9 +1,7 @@
-from lexer import Lexer, TokenType, Token
-
+from lexer import TokenType, Token
 
 class AST:
     pass
-
 
 class BinOp(AST):
     def __init__(self, left, op, right):
@@ -11,24 +9,15 @@ class BinOp(AST):
         self.op = op
         self.right = right
 
-
-class UnaryOp(AST):
-    def __init__(self, op, expr):
-        self.op = op
-        self.expr = expr
-
-
 class Num(AST):
     def __init__(self, token):
         self.token = token
         self.value = token.value
 
-
-class Boolean(AST):
-    def __init__(self, token):
-        self.token = token
-        self.value = token.value
-
+class UnaryOp(AST):
+    def __init__(self, op, expr):
+        self.op = op
+        self.expr = expr
 
 class FunctionDef(AST):
     def __init__(self, name, params, body):
@@ -36,24 +25,38 @@ class FunctionDef(AST):
         self.params = params
         self.body = body
 
+class Boolean(AST):
+    def __init__(self, token):
+        self.token = token
+        self.value = token.value
+
 
 class FunctionCall(AST):
     def __init__(self, name, arguments):
         self.name = name
         self.arguments = arguments
 
-
 class Lambda(AST):
     def __init__(self, params, body):
         self.params = params
         self.body = body
-
 
 class Identifier(AST):
     def __init__(self, token):
         self.token = token
         self.value = token.value
 
+class IfThenElse(AST):
+    def __init__(self, condition, then_body, else_body):
+        self.condition = condition
+        self.then_body = then_body
+        self.else_body = else_body
+
+class LetIn(AST):
+    def __init__(self, var_name, var_value, body):
+        self.var_name = var_name
+        self.var_value = var_value
+        self.body = body
 
 class Parser:
     def __init__(self, lexer):
@@ -69,51 +72,6 @@ class Parser:
         else:
             self.error()
 
-    def function_definition(self):
-        self.eat(TokenType.FUNCTION)
-        name = self.current_token.value
-        self.eat(TokenType.IDENTIFIER)
-        self.eat(TokenType.LPAREN)
-        params = []
-        if self.current_token.type != TokenType.RPAREN:
-            params.append(self.current_token.value)
-            self.eat(TokenType.IDENTIFIER)
-            while self.current_token.type == TokenType.COMMA:
-                self.eat(TokenType.COMMA)
-                params.append(self.current_token.value)
-                self.eat(TokenType.IDENTIFIER)
-        self.eat(TokenType.RPAREN)
-        self.eat(TokenType.ARROW)
-        body = self.expr()
-        return FunctionDef(name, params, body)
-
-    def lambda_expression(self):
-        self.eat(TokenType.LAMBDA)
-        params = []
-        if self.current_token.type != TokenType.ARROW:
-            params.append(self.current_token.value)
-            self.eat(TokenType.IDENTIFIER)
-            while self.current_token.type == TokenType.COMMA:
-                self.eat(TokenType.COMMA)
-                params.append(self.current_token.value)
-                self.eat(TokenType.IDENTIFIER)
-        self.eat(TokenType.ARROW)
-        body = self.expr()
-        return Lambda(params, body)
-
-    def function_call(self):
-        name = self.current_token.value
-        self.eat(TokenType.IDENTIFIER)
-        self.eat(TokenType.LPAREN)
-        arguments = []
-        if self.current_token.type != TokenType.RPAREN:
-            arguments.append(self.expr())
-            while self.current_token.type == TokenType.COMMA:
-                self.eat(TokenType.COMMA)
-                arguments.append(self.expr())
-        self.eat(TokenType.RPAREN)
-        return FunctionCall(name, arguments)
-
     def factor(self):
         token = self.current_token
         if token.type == TokenType.INTEGER:
@@ -124,6 +82,12 @@ class Parser:
             return Boolean(token)
         elif token.type == TokenType.LPAREN:
             self.eat(TokenType.LPAREN)
+            if self.current_token.type == TokenType.LAMBDA:
+                node = self.lambda_expression()
+                self.eat(TokenType.RPAREN)
+                if self.current_token.type == TokenType.LPAREN:
+                    return self.function_call(node)
+                return node
             node = self.expr()
             self.eat(TokenType.RPAREN)
             return node
@@ -141,16 +105,18 @@ class Parser:
         elif token.type == TokenType.LAMBDA:
             return self.lambda_expression()
         elif token.type == TokenType.IDENTIFIER:
-            if self.lexer.current_char == '(':
-                return self.function_call()
-            else:
-                self.eat(TokenType.IDENTIFIER)
-                return Identifier(token)
+            return self.function_call_or_variable()
+        elif token.type == TokenType.IF:
+            return self.if_statement()
+        elif token.type == TokenType.LET:
+            return self.let_in_statement()
+        else:
+            self.error()
 
     def term(self):
         node = self.factor()
 
-        while self.current_token.type in (TokenType.MULTIPLY, TokenType.DIVIDE, TokenType.MODULO):
+        while self.current_token.type in (TokenType.MULTIPLY, TokenType.DIVIDE,TokenType.MODULO):
             token = self.current_token
             if token.type == TokenType.MULTIPLY:
                 self.eat(TokenType.MULTIPLY)
@@ -209,23 +175,100 @@ class Parser:
 
         return node
 
+    # def expr(self):
+    #     node = self.arithmetic_expr()
+    #
+    #     while self.current_token.type in (TokenType.EQUAL, TokenType.NOT_EQUAL,
+    #                                       TokenType.LESS_THAN, TokenType.GREATER_THAN,
+    #                                       TokenType.LESS_THAN_OR_EQUAL, TokenType.GREATER_THAN_OR_EQUAL):
+    #         token = self.current_token
+    #         self.eat(self.current_token.type)
+    #         node = BinOp(left=node, op=token, right=self.arithmetic_expr())
+    #
+    #     return node
+
     def expr(self):
         return self.or_expr()
 
+    def function_definition(self):
+        self.eat(TokenType.FUNCTION)
+        name = self.current_token.value
+        self.eat(TokenType.IDENTIFIER)
+        self.eat(TokenType.LPAREN)
+        params = []
+        if self.current_token.type == TokenType.IDENTIFIER:
+            params.append(self.current_token.value)
+            self.eat(TokenType.IDENTIFIER)
+            while self.current_token.type == TokenType.COMMA:
+                self.eat(TokenType.COMMA)
+                params.append(self.current_token.value)
+                self.eat(TokenType.IDENTIFIER)
+        self.eat(TokenType.RPAREN)
+        self.eat(TokenType.ARROW)
+        body = self.expr()
+        return FunctionDef(name, params, body)
+
+    def lambda_expression(self):
+        self.eat(TokenType.LAMBDA)
+        param = self.current_token.value
+        self.eat(TokenType.IDENTIFIER)
+        self.eat(TokenType.ARROW)
+        body = self.expr()
+        lambda_node = Lambda([param], body)
+
+        # Check if the lambda is immediately called
+        if self.current_token.type == TokenType.LPAREN:
+            self.eat(TokenType.LPAREN)
+            argument = self.expr()
+            self.eat(TokenType.RPAREN)
+            return FunctionCall(lambda_node, [argument])
+
+        return lambda_node
+
+    def function_call(self, callable_expr):
+        self.eat(TokenType.LPAREN)
+        arguments = []
+        if self.current_token.type != TokenType.RPAREN:
+            arguments.append(self.expr())
+            while self.current_token.type == TokenType.COMMA:
+                self.eat(TokenType.COMMA)
+                arguments.append(self.expr())
+        self.eat(TokenType.RPAREN)
+        return FunctionCall(callable_expr, arguments)
+
+    def function_call_or_variable(self):
+        token = self.current_token
+        name = token.value
+        self.eat(TokenType.IDENTIFIER)
+        if self.current_token.type == TokenType.LPAREN:
+            self.eat(TokenType.LPAREN)
+            arguments = []
+            if self.current_token.type != TokenType.RPAREN:
+                arguments.append(self.expr())
+            self.eat(TokenType.RPAREN)
+            return FunctionCall(name, arguments)
+        return Identifier(token)
+
+    def if_statement(self):
+        self.eat(TokenType.IF)
+        condition = self.expr()
+        self.eat(TokenType.THEN)
+        then_body = self.expr()
+        self.eat(TokenType.ELSE)
+        else_body = self.expr()
+        return IfThenElse(condition, then_body, else_body)
+
+    def let_in_statement(self):
+        self.eat(TokenType.LET)
+        var_name = self.current_token.value
+        self.eat(TokenType.IDENTIFIER)
+        self.eat(TokenType.ARROW)
+        var_value = self.expr()
+        self.eat(TokenType.IN)
+        body = self.expr()
+        return LetIn(var_name, var_value, body)
+
     def parse(self):
+        if self.current_token.type == TokenType.FUNCTION:
+            return self.function_definition()
         return self.expr()
-
-
-# Example usage
-if __name__ == '__main__':
-    while True:
-        try:
-            text = input('calc> ')
-        except EOFError:
-            break
-        if not text:
-            continue
-        lexer = Lexer(text)
-        parser = Parser(lexer)
-        result = parser.parse()
-        print(result)

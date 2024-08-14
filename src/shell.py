@@ -1,7 +1,6 @@
 from lexer import Lexer, TokenType
-from parser import Parser, BinOp, UnaryOp, Num, Boolean, FunctionDef, Lambda, FunctionCall, Identifier
+from parser import Parser, BinOp, Num, FunctionDef, FunctionCall, Identifier, IfThenElse, LetIn, Boolean, Lambda, UnaryOp
 from interpreter import Interpreter
-
 
 def print_ast(node, level=0):
     indent = '  ' * level
@@ -34,52 +33,67 @@ def print_ast(node, level=0):
         print_ast(node.body, level + 2)
     elif isinstance(node, FunctionCall):
         print(f"{indent}FunctionCall:")
-        print(f"{indent}  Name: {node.name}")
+        if isinstance(node.name, Lambda):
+            print(f"{indent}  Name (Lambda):")
+            print_ast(node.name, level + 2)
+        elif isinstance(node.name, Identifier):
+            print(f"{indent}  Name: {node.name.value}")
+        else:
+            print(f"{indent}  Name: {node.name}")
         print(f"{indent}  Arguments:")
         for arg in node.arguments:
             print_ast(arg, level + 2)
     elif isinstance(node, Identifier):
         print(f"{indent}Identifier: {node.value}")
+    elif isinstance(node, IfThenElse):
+        print(f"{indent}IfThenElse:")
+        print(f"{indent}  Condition:")
+        print_ast(node.condition, level + 2)
+        print(f"{indent}  Then:")
+        print_ast(node.then_body, level + 2)
+        print(f"{indent}  Else:")
+        print_ast(node.else_body, level + 2)
+    elif isinstance(node, LetIn):
+        print(f"{indent}LetIn:")
+        print(f"{indent}  Variable: {node.var_name}")
+        print(f"{indent}  Value:")
+        print_ast(node.var_value, level + 2)
+        print(f"{indent}  In:")
+        print_ast(node.body, level + 2)
     else:
         print(f"{indent}Unknown node type: {type(node)}")
-
-
 def main():
-    print("Simple Interpreter")
-    print("Type 'exit' to quit")
-
     interpreter = Interpreter()
 
     while True:
         try:
-            text = input('> ')
+            text = input('calc> ')
             if text.lower() == 'exit':
-                print("Goodbye!")
                 break
 
-            lexer = Lexer(text)
-            parser = Parser(lexer)
-
+            # Print tokens
             print("Tokens:")
-            lexer_copy = Lexer(text)  # Create a new lexer instance for token printing
+            lexer = Lexer(text)
             while True:
-                token = lexer_copy.get_next_token()
+                token = lexer.get_next_token()
                 print(token)
                 if token.type == TokenType.EOF:
                     break
 
+            # Parse and print AST
+            lexer = Lexer(text)  # Reset lexer
+            parser = Parser(lexer)
+            tree = parser.parse()
             print("\nAbstract Syntax Tree:")
-            ast = parser.parse()
-            print_ast(ast)
+            print_ast(tree)
 
+            # Interpret
             print("\nResult:")
-            result = interpreter.interpret(ast)
+            result = interpreter.interpret(tree)
             print(result)
             print()
-
         except Exception as e:
             print(f"Error: {str(e)}")
-
 
 if __name__ == '__main__':
     main()

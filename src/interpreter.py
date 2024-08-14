@@ -1,6 +1,5 @@
-from parser import BinOp, UnaryOp, Num, Boolean
+from parser import BinOp, Num, FunctionDef, FunctionCall, Identifier, IfThenElse, LetIn, Boolean, Lambda, UnaryOp
 from lexer import TokenType
-
 
 class Function:
     def __init__(self, name, params, body, env):
@@ -9,22 +8,27 @@ class Function:
         self.body = body
         self.env = env
 
+    def __str__(self):
+        if self.name:
+            return f"<function {self.name}>"
+        else:
+            return f"<lambda function>"
 
 class Interpreter:
     def __init__(self):
         self.global_env = {}
 
-    def visit(self, node):
+    def visit(self, node, env):
         method_name = f'visit_{type(node).__name__}'
         method = getattr(self, method_name, self.generic_visit)
-        return method(node)
+        return method(node, env)
 
-    def generic_visit(self, node):
+    def generic_visit(self, node, env):
         raise Exception(f'No visit_{type(node).__name__} method')
 
-    def visit_BinOp(self, node):
-        left = self.visit(node.left)
-        right = self.visit(node.right)
+    def visit_BinOp(self, node, env):
+        left = self.visit(node.left, env)
+        right = self.visit(node.right, env)
 
         if node.op.type == TokenType.PLUS:
             return left + right
@@ -53,8 +57,8 @@ class Interpreter:
         elif node.op.type == TokenType.GREATER_THAN_OR_EQUAL:
             return left >= right
 
-    def visit_UnaryOp(self, node):
-        expr = self.visit(node.expr)
+    def visit_UnaryOp(self, node, env):
+        expr = self.visit(node.expr, env)
         if node.op.type == TokenType.PLUS:
             return +expr
         elif node.op.type == TokenType.MINUS:
@@ -62,43 +66,61 @@ class Interpreter:
         elif node.op.type == TokenType.NOT:
             return not expr
 
-    def visit_Num(self, node):
+    def visit_Num(self, node, env):
         return node.value
 
-    def visit_Boolean(self, node):
+    def visit_Boolean(self, node, env):
         return node.value
 
-    def visit_FunctionDef(self, node):
-        function = Function(node.name, node.params, node.body, self.global_env.copy())
-        self.global_env[node.name] = function
+    def visit_FunctionDef(self, node, env):
+        function = Function(node.name, node.params, node.body, env.copy())
+        self.global_env[node.name] = function  # Update the global environment
         return f"Function '{node.name}' defined"
 
-    def visit_Lambda(self, node):
-        return Function(None, node.params, node.body, self.global_env.copy())
+    def visit_Lambda(self, node, env):
+        def lambda_func(*args):
+            local_env = env.copy()
+            for param, arg in zip(node.params, args):
+                local_env[param] = arg
+            return self.visit(node.body, local_env)
 
-    def visit_FunctionCall(self, node):
-        function = self.global_env.get(node.name)
-        if function is None:
-            raise NameError(f"Function '{node.name}' is not defined")
+        return lambda_func
 
-        if len(function.params) != len(node.arguments):
-            raise ValueError(f"Expected {len(function.params)} arguments, got {len(node.arguments)}")
+    def visit_FunctionCall(self, node, env):
+        if isinstance(node.name, Lambda):
+            # It's a lambda function call
+            lambda_func = self.visit_Lambda(node.name, env)
+            arguments = [self.visit(arg, env) for arg in node.arguments]
+            return lambda_func(*arguments)
+        else:
+            # Regular function call
+            function = self.global_env.get(node.name) or env.get(node.name)
+            if function is None:
+                raise Exception(f"Function '{node.name}' is not defined")
+            if len(function.params) != len(node.arguments):
+                raise Exception(f"Expected {len(function.params)} arguments, got {len(node.arguments)}")
+            local_env = function.env.copy()
+            for param, arg in zip(function.params, node.arguments):
+                local_env[param] = self.visit(arg, env)
+            return self.visit(function.body, local_env)
 
-        local_env = function.env.copy()
-        for param, arg in zip(function.params, node.arguments):
-            local_env[param] = self.visit(arg)
-
-        previous_env = self.global_env
-        self.global_env = local_env
-        result = self.visit(function.body)
-        self.global_env = previous_env
-        return result
-
-    def visit_Identifier(self, node):
-        value = self.global_env.get(node.value)
+    def visit_Identifier(self, node, env):
+        value = env.get(node.value) or self.global_env.get(node.value)
         if value is None:
-            raise NameError(f"Name '{node.value}' is not defined")
+            raise Exception(f"Variable '{node.value}' is not defined")
         return value
 
+    def visit_IfThenElse(self, node, env):
+        if self.visit(node.condition, env):
+            return self.visit(node.then_body, env)
+        else:
+            return self.visit(node.else_body, env)
+
+    def visit_LetIn(self, node, env):
+        var_value = self.visit(node.var_value, env)
+        new_env = env.copy()
+        new_env[node.var_name] = var_value
+        return self.visit(node.body, new_env)
+
     def interpret(self, tree):
-        return self.visit(tree)
+        return self.visit(tree, self.global_env)
