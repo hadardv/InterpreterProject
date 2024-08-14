@@ -236,18 +236,27 @@ class Parser:
         self.eat(TokenType.RPAREN)
         return FunctionCall(callable_expr, arguments)
 
+    # def function_call_or_variable(self):
+    #     token = self.current_token
+    #     name = token.value
+    #     self.eat(TokenType.IDENTIFIER)
+    #     if self.current_token.type == TokenType.LPAREN:
+    #         self.eat(TokenType.LPAREN)
+    #         arguments = []
+    #         if self.current_token.type != TokenType.RPAREN:
+    #             arguments.append(self.expr())
+    #         self.eat(TokenType.RPAREN)
+    #         return FunctionCall(name, arguments)
+    #     return Identifier(token)
+
     def function_call_or_variable(self):
         token = self.current_token
         name = token.value
         self.eat(TokenType.IDENTIFIER)
         if self.current_token.type == TokenType.LPAREN:
-            self.eat(TokenType.LPAREN)
-            arguments = []
-            if self.current_token.type != TokenType.RPAREN:
-                arguments.append(self.expr())
-            self.eat(TokenType.RPAREN)
-            return FunctionCall(name, arguments)
+            return self.function_call(name)
         return Identifier(token)
+
 
     def if_statement(self):
         self.eat(TokenType.IF)
