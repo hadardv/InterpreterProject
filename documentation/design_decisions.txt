@@ -1,0 +1,61 @@
+# Report: Design Decisions, Challenges, and Solutions
+
+## Design Decisions
+
+1. Language Paradigm:
+   - Decision: Implement a functional programming language.
+   - Rationale: Functional programming concepts are becoming increasingly important in modern software development. This paradigm allows for a concise and expressive language that's well-suited for demonstrating key programming concepts.
+
+2. Interpreter Architecture:
+   - Decision: Use a three-stage process: Lexical Analysis (Lexer) → Parsing (Parser) → Interpretation (Interpreter).
+   - Rationale: This separation of concerns allows for a clear and modular design, making the interpreter easier to understand, maintain, and extend.
+
+3. Abstract Syntax Tree (AST):
+   - Decision: Represent the parsed program as an AST.
+   - Rationale: ASTs provide a structured representation of the program that's easy to traverse and interpret. They also facilitate potential future extensions like code optimization or compilation.
+
+4. Immutability:
+   - Decision: Implement variables as immutable bindings.
+   - Rationale: Immutability is a key concept in functional programming, promoting safer and more predictable code by preventing unintended side effects.
+
+5. First-Class Functions:
+   - Decision: Implement functions as first-class citizens.
+   - Rationale: This allows for powerful abstractions and is a fundamental concept in functional programming.
+
+## Challenges Faced and Solutions Implemented
+
+1. Challenge: Implementing Multi-Parameter Functions
+   - Problem: The initial implementation only supported single-parameter functions.
+   - Solution: Modified the parser to handle comma-separated parameter lists and updated the interpreter to create a local environment with multiple parameter bindings.
+
+2. Challenge: Operator Precedence
+   - Problem: Ensuring correct operator precedence in arithmetic and logical expressions.
+   - Solution: Implemented a recursive descent parser with separate methods for each precedence level (e.g., or_expr, and_expr, comparison_expr, etc.).
+
+3. Challenge: Lexical Scoping
+   - Problem: Implementing proper lexical scoping for variables and functions.
+   - Solution: Used environment chaining. Each function carries its definition environment, which is used as the parent environment when the function is called.
+
+4. Challenge: Recursive Function Calls
+   - Problem: Allowing functions to call themselves recursively.
+   - Solution: Store function definitions in the global environment, allowing them to be accessed within their own body.
+
+5. Challenge: Lambda Functions
+   - Problem: Implementing anonymous functions (lambdas) with proper closure behavior.
+   - Solution: Created a special Lambda AST node and corresponding interpreter logic to create and execute lambda functions with captured environments.
+
+6. Challenge: Error Handling and Debugging
+   - Problem: Providing meaningful error messages and debugging information.
+   - Solution: Implemented custom exception handling throughout the interpreter. Added a debug mode in the shell to display tokens and AST for given inputs.
+
+## Future Improvements
+
+1. Type System: Implement a static type system to catch type errors before runtime.
+2. More Data Types: Add support for floating-point numbers, strings, and composite types like lists and maps.
+3. Pattern Matching: Introduce pattern matching for more expressive function definitions and control structures.
+4. Tail Call Optimization: Implement tail call optimization to allow efficient recursive algorithms.
+5. Standard Library: Develop a set of built-in functions and data structures to increase the language's utility.
+6. Performance Optimizations: Investigate performance bottlenecks and implement optimizations, possibly including a compilation step to bytecode.
+
+This project has provided valuable insights into language design and implementation, showcasing both the power and limitations of a simple functional language.
+The modular design of the interpreter allows for future extensions and improvements, making it a solid foundation for further exploration of programming language concepts.

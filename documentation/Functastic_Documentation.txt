@@ -1,0 +1,84 @@
+Language Syntax and Features
+
+Data Types:
+
+Integers: Whole numbers (e.g., 42, -7, 0)
+Booleans: true or false
+
+
+Operators:
+
+Arithmetic: +, -, *, /, % (integer division and modulo)
+Comparison: ==, !=, <, >, <=, >=
+Logical: &&, ||, !
+
+
+Control Structures:
+
+If-Then-Else: if condition then expression else expression
+
+
+Functions:
+
+Function Definition: function name(param1, param2, ...) => expression
+Function Call: functionName(arg1, arg2, ...)
+Lambda Functions: lambda param => expression
+
+
+Variables and Scoping:
+
+Let-In Expression: let variableName => value in expression
+
+
+Features:
+
+First-class functions
+Lexical scoping
+Higher-order functions
+Immutable variables (all bindings are immutable)
+
+
+Trade-offs and Limitations:
+
+Simplicity vs. Expressiveness:
+
+The language is designed to be simple and easy to understand, which limits its expressiveness compared to more complex languages.
+Only supports integers and booleans, lacking floating-point numbers, strings, and complex data structures.
+
+
+Functional Paradigm:
+
+Focuses on functional programming concepts, which may be unfamiliar to programmers used to imperative or object-oriented paradigms.
+Lack of mutable state can make certain algorithms more challenging to implement efficiently.
+
+
+Error Handling:
+
+No built-in exception handling mechanism, which can make error management more difficult.
+
+
+Performance:
+
+The interpreter-based approach may lead to slower execution compared to compiled languages.
+
+
+Scoping:
+
+While lexical scoping is implemented, the language lacks block-level scoping, which can lead to unexpected behavior in complex nested structures.
+
+
+Limited Standard Library:
+No built-in functions or standard library, requiring users to implement basic functionality themselves.
+
+
+Single-Expression Functions:
+Functions are limited to a single expression, which can make complex function bodies less readable.
+
+
+Limited Lambda Functions:
+Lambda functions are restricted to a single parameter, limiting their flexibility.
+
+
+
+These trade-offs and limitations are primarily due to the language's focus on simplicity and educational purposes.
+For production use, many of these limitations would need to be addressed.

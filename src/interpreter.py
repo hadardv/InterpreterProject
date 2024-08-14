@@ -1,6 +1,7 @@
 from parser import BinOp, Num, FunctionDef, FunctionCall, Identifier, IfThenElse, LetIn, Boolean, Lambda, UnaryOp
 from lexer import TokenType
 
+
 class Function:
     def __init__(self, name, params, body, env):
         self.name = name
@@ -13,6 +14,7 @@ class Function:
             return f"<function {self.name}>"
         else:
             return f"<lambda function>"
+
 
 class Interpreter:
     def __init__(self):
@@ -72,10 +74,34 @@ class Interpreter:
     def visit_Boolean(self, node, env):
         return node.value
 
+    # def visit_FunctionDef(self, node, env):
+    #     function = Function(node.name, node.params, node.body, env.copy())
+    #     self.global_env[node.name] = function  # Update the global environment
+    #     return f"Function '{node.name}' defined"
     def visit_FunctionDef(self, node, env):
         function = Function(node.name, node.params, node.body, env.copy())
-        self.global_env[node.name] = function  # Update the global environment
+        self.global_env[node.name] = function
         return f"Function '{node.name}' defined"
+
+
+
+    # def visit_FunctionCall(self, node, env):
+    #     if isinstance(node.name, Lambda):
+    #         # It's a lambda function call
+    #         lambda_func = self.visit_Lambda(node.name, env)
+    #         arguments = [self.visit(arg, env) for arg in node.arguments]
+    #         return lambda_func(*arguments)
+    #     else:
+    #         # Regular function call
+    #         function = self.global_env.get(node.name)
+    #         if function is None:
+    #             raise Exception(f"Function '{node.name}' is not defined")
+    #         if len(function.params) != len(node.arguments):
+    #             raise Exception(f"Expected {len(function.params)} arguments, got {len(node.arguments)}")
+    #         local_env = function.env.copy()
+    #         for param, arg in zip(function.params, node.arguments):
+    #             local_env[param] = self.visit(arg, env)
+    #         return self.visit(function.body, local_env)
 
     def visit_Lambda(self, node, env):
         def lambda_func(*args):
@@ -86,6 +112,24 @@ class Interpreter:
 
         return lambda_func
 
+    # def visit_FunctionCall(self, node, env):
+    #     if isinstance(node.name, Lambda):
+    #         # It's a lambda function call
+    #         lambda_func = self.visit_Lambda(node.name, env)
+    #         arguments = [self.visit(arg, env) for arg in node.arguments]
+    #         return lambda_func(*arguments)
+    #     else:
+    #         # Regular function call
+    #         function = self.global_env.get(node.name) or env.get(node.name)
+    #         if function is None:
+    #             raise Exception(f"Function '{node.name}' is not defined")
+    #         if len(function.params) != len(node.arguments):
+    #             raise Exception(f"Expected {len(function.params)} arguments, got {len(node.arguments)}")
+    #         local_env = function.env.copy()
+    #         for param, arg in zip(function.params, node.arguments):
+    #             local_env[param] = self.visit(arg, env)
+    #         return self.visit(function.body, local_env)
+
     def visit_FunctionCall(self, node, env):
         if isinstance(node.name, Lambda):
             # It's a lambda function call
@@ -94,21 +138,37 @@ class Interpreter:
             return lambda_func(*arguments)
         else:
             # Regular function call
-            function = self.global_env.get(node.name) or env.get(node.name)
+            function = self.global_env.get(node.name)
             if function is None:
                 raise Exception(f"Function '{node.name}' is not defined")
             if len(function.params) != len(node.arguments):
                 raise Exception(f"Expected {len(function.params)} arguments, got {len(node.arguments)}")
-            local_env = function.env.copy()
-            for param, arg in zip(function.params, node.arguments):
-                local_env[param] = self.visit(arg, env)
-            return self.visit(function.body, local_env)
 
+            # Create a new environment for this function call
+            call_env = function.env.copy()
+
+            # Evaluate arguments in the current environment
+            evaluated_args = [self.visit(arg, env) for arg in node.arguments]
+
+            # Bind parameters to arguments in the new environment
+            for param, arg in zip(function.params, evaluated_args):
+                call_env[param] = arg
+
+            # Execute the function body in the new environment
+            return self.visit(function.body, call_env)
+
+    # def visit_Identifier(self, node, env):
+    #     value = env.get(node.value) or self.global_env.get(node.value)
+    #     if value is None:
+    #         raise Exception(f"Variable '{node.value}' is not defined")
+    #     return value
     def visit_Identifier(self, node, env):
-        value = env.get(node.value) or self.global_env.get(node.value)
-        if value is None:
+        if node.value in env:
+            return env[node.value]
+        elif node.value in self.global_env:
+            return self.global_env[node.value]
+        else:
             raise Exception(f"Variable '{node.value}' is not defined")
-        return value
 
     def visit_IfThenElse(self, node, env):
         if self.visit(node.condition, env):

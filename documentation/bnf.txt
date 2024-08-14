@@ -1,0 +1,56 @@
+bnf:
+
+<program> ::= <statement> | <statement> ";" <program>
+
+<statement> ::= <expression>
+               | <function-definition>
+               | <if-statement>
+               | <let-in-statement>
+
+<expression> ::= <or-expr>
+
+<or-expr> ::= <and-expr> | <or-expr> "||" <and-expr>
+
+<and-expr> ::= <comparison-expr> | <and-expr> "&&" <comparison-expr>
+
+<comparison-expr> ::= <arithmetic-expr>
+                    | <arithmetic-expr> "==" <arithmetic-expr>
+                    | <arithmetic-expr> "!=" <arithmetic-expr>
+                    | <arithmetic-expr> "<" <arithmetic-expr>
+                    | <arithmetic-expr> ">" <arithmetic-expr>
+                    | <arithmetic-expr> "<=" <arithmetic-expr>
+                    | <arithmetic-expr> ">=" <arithmetic-expr>
+
+<arithmetic-expr> ::= <term> | <arithmetic-expr> "+" <term> | <arithmetic-expr> "-" <term>
+
+<term> ::= <factor> | <term> "*" <factor> | <term> "/" <factor> | <term> "%" <factor>
+
+<factor> ::= <integer>
+           | <boolean>
+           | <identifier>
+           | "(" <expression> ")"
+           | "+" <factor>
+           | "-" <factor>
+           | "!" <factor>
+           | <function-call>
+           | <lambda-expression>
+
+<function-definition> ::= "function" <identifier> "(" <parameter-list> ")" "=>" <expression>
+
+<parameter-list> ::= ε | <identifier> | <identifier> "," <parameter-list>
+
+<if-statement> ::= "if" <expression> "then" <expression> "else" <expression>
+
+<let-in-statement> ::= "let" <identifier> "=>" <expression> "in" <expression>
+
+<function-call> ::= <identifier> "(" <argument-list> ")"
+
+<argument-list> ::= ε | <expression> | <expression> "," <argument-list>
+
+<lambda-expression> ::= "lambda" <identifier> "=>" <expression>
+
+<integer> ::= [0-9]+
+
+<boolean> ::= "true" | "false"
+
+<identifier> ::= [a-zA-Z][a-zA-Z0-9]*

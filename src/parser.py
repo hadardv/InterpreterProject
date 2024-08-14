@@ -175,18 +175,6 @@ class Parser:
 
         return node
 
-    # def expr(self):
-    #     node = self.arithmetic_expr()
-    #
-    #     while self.current_token.type in (TokenType.EQUAL, TokenType.NOT_EQUAL,
-    #                                       TokenType.LESS_THAN, TokenType.GREATER_THAN,
-    #                                       TokenType.LESS_THAN_OR_EQUAL, TokenType.GREATER_THAN_OR_EQUAL):
-    #         token = self.current_token
-    #         self.eat(self.current_token.type)
-    #         node = BinOp(left=node, op=token, right=self.arithmetic_expr())
-    #
-    #     return node
-
     def expr(self):
         return self.or_expr()
 
