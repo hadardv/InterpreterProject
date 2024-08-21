@@ -8,7 +8,7 @@ Booleans: true or false
 
 Operators:
 
-Arithmetic: +, -, *, /, % (integer division and modulo)
+Arithmetic: +, -, *, /, %
 Comparison: ==, !=, <, >, <=, >=
 Logical: &&, ||, !
 
@@ -42,14 +42,16 @@ Trade-offs and Limitations:
 
 Simplicity vs. Expressiveness:
 
-The language is designed to be simple and easy to understand, which limits its expressiveness compared to more complex languages.
+The language is designed to be simple and easy to understand,
+which limits its expressiveness compared to more complex languages.
 Only supports integers and booleans, lacking floating-point numbers, strings, and complex data structures.
 
 
 Functional Paradigm:
 
-Focuses on functional programming concepts, which may be unfamiliar to programmers used to imperative or object-oriented paradigms.
-Lack of mutable state can make certain algorithms more challenging to implement efficiently.
+Focuses on functional programming concepts, which may be unfamiliar to programmers used to imperative
+or object-oriented paradigms. Lack of mutable state can make certain algorithms more challenging to
+ implement efficiently.
 
 
 Error Handling:
@@ -64,7 +66,8 @@ The interpreter-based approach may lead to slower execution compared to compiled
 
 Scoping:
 
-While lexical scoping is implemented, the language lacks block-level scoping, which can lead to unexpected behavior in complex nested structures.
+While lexical scoping is implemented, the language lacks block-level scoping,
+ which can lead to unexpected behavior in complex nested structures.
 
 
 Limited Standard Library:

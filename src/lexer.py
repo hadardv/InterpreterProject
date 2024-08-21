@@ -1,6 +1,7 @@
 from enum import Enum
 
-
+#defines a TokenType enum that contains all the possible types of tokens in the language.
+# This includes keywords, operators, and other symbols.
 class TokenType(Enum):
     FUNCTION = 'FUNCTION'
     LAMBDA = 'LAMBDA'
@@ -33,33 +34,42 @@ class TokenType(Enum):
     IN = 'IN'
 
 
+#This class represents a token in the language.
+# Each token has a type (from the TokenType enum) and a value.
 class Token:
     def __init__(self, type, value):
         self.type = type
         self.value = value
 
+    #provide a string representation of the token.
     def __str__(self):
         return f'Token({self.type}, {repr(self.value)})'
 
-
+#The main class responsible for tokenizing the input text.
 class Lexer:
+    #initializes the lexer with the input text and sets up the
+    # initial position and current character.
     def __init__(self, text):
         self.text = text
         self.pos = 0
         self.current_char = self.text[self.pos] if self.pos < len(self.text) else None
 
+    #Moves to the next character in the input text.
     def advance(self):
         self.pos += 1
         self.current_char = self.text[self.pos] if self.pos < len(self.text) else None
 
+    # Looks at the next character without moving the position.
     def peek(self):
         peek_pos = self.pos + 1
         return self.text[peek_pos] if peek_pos < len(self.text) else None
 
+    #Skips over any whitespace characters.
     def skip_whitespace(self):
         while self.current_char is not None and self.current_char.isspace():
             self.advance()
 
+    #Reads a sequence of digits and returns the integer value.
     def integer(self):
         result = ''
         while self.current_char is not None and self.current_char.isdigit():
@@ -67,6 +77,8 @@ class Lexer:
             self.advance()
         return int(result)
 
+    #Reads an identifier or keyword. It checks if the identifier is a reserved keyword
+    #and returns the appropriate token.
     def _id(self):
         result = ''
         while self.current_char is not None and self.current_char.isalnum():
@@ -94,6 +106,8 @@ class Lexer:
         else:
             return Token(TokenType.IDENTIFIER, result)
 
+    # The core of the lexer.
+    # It analyzes the current character and determines which type of token it represents.
     def get_next_token(self):
         while self.current_char is not None:
             if self.current_char.isspace():

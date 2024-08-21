@@ -1,9 +1,11 @@
 from lexer import Lexer, TokenType
-from parser import Parser, BinOp, Num, FunctionDef, FunctionCall, Identifier, IfThenElse, LetIn, Boolean, Lambda, UnaryOp
+from parser import Parser, BinOp, Num, FunctionDef, FunctionCall, Identifier, IfThenElse, LetIn, Boolean, Lambda, \
+    UnaryOp
 from interpreter import Interpreter
 import sys
 
 
+#This function recursively prints the Abstract Syntax Tree (AST).
 def print_ast(node, level=0):
     indent = '  ' * level
     if isinstance(node, BinOp):
@@ -66,6 +68,7 @@ def print_ast(node, level=0):
         print(f"{indent}Unknown node type: {type(node)}")
 
 
+#This function tokenizes the input text and prints each token.
 def print_tokens(text):
     lexer = Lexer(text)
     while True:
@@ -75,6 +78,9 @@ def print_tokens(text):
             break
 
 
+#This is the core function that processes user input.
+#It tokenizes the input, parses it into an AST, and interprets the result.
+#If debug is True, it prints the tokens and AST before interpreting.
 def execute_command(interpreter, text, debug=False):
     try:
         if debug:
@@ -97,10 +103,11 @@ def execute_command(interpreter, text, debug=False):
         return None
 
 
+#This function implements an interactive Read-Eval-Print Loop (REPL).
 def interactive_mode(interpreter):
     while True:
         try:
-            text = input('calc> ')
+            text = input('Functastic> ')
             if text.lower() == 'exit':
                 break
             if text.lower() == 'debug':
@@ -113,19 +120,22 @@ def interactive_mode(interpreter):
             break
 
 
+#This function reads a program from a file and executes it.
+#It splits the program into commands (separated by semicolons) and executes each command.
 def program_mode(interpreter, filename):
     with open(filename, 'r') as file:
         program = file.read()
 
     commands = program.split(';')
     for command in commands:
-        command = command.strip()
+        command = command.strip()  #method used to remove leading and trailing whitespace from a string.
         if command:
             print(f"Executing: {command}")
             execute_command(interpreter, command)
             print()
 
 
+#This is the entry point of the script.
 def main():
     interpreter = Interpreter()
 
@@ -139,40 +149,4 @@ def main():
 
 
 if __name__ == '__main__':
-        main()
-
-# def main():
-#     interpreter = Interpreter()
-#
-#     while True:
-#         try:
-#             text = input('calc> ')
-#             if text.lower() == 'exit':
-#                 break
-#
-#             # Print tokens
-#             print("Tokens:")
-#             lexer = Lexer(text)
-#             while True:
-#                 token = lexer.get_next_token()
-#                 print(token)
-#                 if token.type == TokenType.EOF:
-#                     break
-#
-#             # Parse and print AST
-#             lexer = Lexer(text)  # Reset lexer
-#             parser = Parser(lexer)
-#             tree = parser.parse()
-#             print("\nAbstract Syntax Tree:")
-#             print_ast(tree)
-#
-#             # Interpret
-#             print("\nResult:")
-#             result = interpreter.interpret(tree)
-#             print(result)
-#             print()
-#         except Exception as e:
-#             print(f"Error: {str(e)}")
-#
-# if __name__ == '__main__':
-#     main()
+    main()

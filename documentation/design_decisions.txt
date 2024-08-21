@@ -4,7 +4,9 @@
 
 1. Language Paradigm:
    - Decision: Implement a functional programming language.
-   - Rationale: Functional programming concepts are becoming increasingly important in modern software development. This paradigm allows for a concise and expressive language that's well-suited for demonstrating key programming concepts.
+   - Rationale: Functional programming concepts are becoming increasingly important in modern software development.
+    This paradigm allows for a concise and expressive language that's well-suited for demonstrating key programming
+    concepts.
 
 2. Interpreter Architecture:
    - Decision: Use a three-stage process: Lexical Analysis (Lexer) → Parsing (Parser) → Interpretation (Interpreter).
@@ -12,7 +14,8 @@
 
 3. Abstract Syntax Tree (AST):
    - Decision: Represent the parsed program as an AST.
-   - Rationale: ASTs provide a structured representation of the program that's easy to traverse and interpret. They also facilitate potential future extensions like code optimization or compilation.
+   - Rationale: ASTs provide a structured representation of the program that's easy to traverse and interpret.
+   They also facilitate potential future extensions like code optimization or compilation.
 
 4. Immutability:
    - Decision: Implement variables as immutable bindings.
